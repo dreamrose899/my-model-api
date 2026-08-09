@@ -1,5 +1,4 @@
-from flask import Flask, request, jsonify
-
+from flask import Flask, request, jsonif
 app = Flask(__name__)
 
 # سجل تتبع الاستخدام المجاني
@@ -13,7 +12,7 @@ PAID_API_KEYS = [
 
 # بيانات محفظتك للتحصيل بالـ USDT
 USDT_WALLET = "TWDJD3VtTFFVpZjKhtucMHXvdZjMnrYcep"
-USDT_NETWORK = "Polygon"
+USDT_NETWORK = "TRC20"
 PRICE_USD = "10 USDT"
 
 @app.route('/predict', methods=['POST'])
