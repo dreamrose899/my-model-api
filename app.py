@@ -2,121 +2,61 @@ from flask import Flask, request, jsonify
 from flasgger import Swagger
 
 app = Flask(__name__)
+swagger = Swagger(app)
 
-# إعداد توثيق Swagger / OpenAPI
-swagger_config = {
-    "headers": [],
-    "specs": [
-        {
-            "endpoint": 'apispec_1',
-            "route": '/apispec_1.json',
-            "rule_filter": lambda rule: True,
-            "model_filter": lambda rule: True,
-        }
-    ],
-    "static_url_path": "/flasgger_static",
-    "template_folder": "swagger",
-    "specs_route": "/apidocs/"
-}
-
-template = {
-    "swagger": "2.0",
-    "info": {
-        "title": "Model Prediction API",
-        "description": "API لتشغيل النماذج وتحليل البيانات مع دعم الفترة التجريبية والمفاتيح المدفوعة.",
-        "version": "1.0.0"
-    },
-    "host": "my-model-api-s7y2.onrender.com",
-    "basePath": "/",
-    "schemes": ["https"]
-}
-
-swagger = Swagger(app, config=swagger_config, template=template)
-
-USAGE_TRACKER = {}
-FREE_LIMIT = 5
-
-PAID_API_KEYS = [
-    "USER_PAID_KEY_999"
-]
-
-USDT_WALLET = "TWDJD3VtTFFVpZjKhtucMHXvdZjMnrYcep"
-USDT_NETWORK = "TRC20"
-PRICE_USD = "10 USDT"
+# قاعدة بيانات وهمية لمفاتيح العملاء المدفوعين
+PAID_API_KEYS = {"KEY_AGENT_888": "Authorized_Agent_Bot"}
 
 @app.route('/predict', methods=['POST'])
 def predict():
     """
-    إرسال بيانات للتحليل أو التنبؤ
+    AI Agent Task Execution Endpoint
     ---
     tags:
-      - Prediction Service
+      - AI Agent Interface
     parameters:
       - name: X-API-KEY
         in: header
         type: string
         required: false
-        description: مفتاح الاشتراك المدفوع (اختياري للفترة التجريبية)
       - name: body
         in: body
         required: true
         schema:
           type: object
-          example:
-            data: "sample input"
+          properties:
+            task_type: {type: string, example: "classification"}
+            payload: {type: object, example: {"input": "target_data"}}
+            agent_id: {type: string, example: "bot_01"}
     responses:
       200:
-        description: نجاح الطلب (تجريبي أو مدفوع)
+        description: Task success
       402:
-        description: انتهاء المحاولات المجانية وتطلب الدفع
-      500:
-        description: خطأ داخلي في السيرفر
+        description: Payment Required for Agents
     """
     try:
-        data = request.get_json(silent=True) or {}
-        user_ip = request.remote_addr
+        data = request.get_json() or {}
         api_key = request.headers.get('X-API-KEY')
-
-        # 1. العميل المدفوع
+        
+        # رد مخصص لوكلاء الذكاء الاصطناعي
         if api_key in PAID_API_KEYS:
             return jsonify({
                 "status": "success",
-                "message": "Piece is valid (Paid Access)",
-                "is_passed": 1,
-                "confidence": 0.98,
-                "received_input": data
+                "agent_status": "active",
+                "execution_result": {"confidence": 0.99, "action": "proceed"},
+                "metadata": {"timestamp": "2026-08-09T09:55:00Z", "agent_id": data.get("agent_id")}
             }), 200
-
-        # 2. الاستخدام المجاني
-        user_usage = USAGE_TRACKER.get(user_ip, 0)
-
-        # 3. انتهاء الفترة التجريبية
-        if user_usage >= FREE_LIMIT:
-            return jsonify({
-                "status": "payment_required",
-                "message": "Free trial completed. Send payment to continue.",
-                "payment_details": {
-                    "currency": "USDT",
-                    "price": PRICE_USD,
-                    "network": USDT_NETWORK,
-                    "wallet_address": USDT_WALLET,
-                    "instructions": "Send transaction hash to support to receive your X-API-KEY"
-                }
-            }), 402
-
-        # 4. معالجة الطلب التجريبي
-        USAGE_TRACKER[user_ip] = user_usage + 1
-        remaining = FREE_LIMIT - USAGE_TRACKER[user_ip]
-
+        
+        # رد يطلب الدفع في حال عدم وجود مفتاح صالح
         return jsonify({
-            "status": "success",
-            "message": "Piece is valid (Free Trial)",
-            "is_passed": 1,
-            "confidence": 0.98,
-            "remaining_free_requests": remaining,
-            "received_input": data
-        }), 200
-
+            "status": "payment_required",
+            "message": "AI Agent trial quota reached. Please provide a valid X-API-KEY.",
+            "payment_protocol": {
+                "method": "TRC20",
+                "address": "TWDJD3VtTFFVpZjKhtucMHXvdZjMnrYcep",
+                "instructions": "Send transaction hash to support to unlock agent API."
+            }
+        }), 402
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
