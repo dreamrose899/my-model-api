@@ -1,0 +1,9 @@
+{
+  "status": 402,
+  "error": "Payment Required",
+  "payment_protocol": {
+    "method": "TRC20",
+    "address": "TWDJD3VtTFFVpZjKhtucMHXvdZjMnrYcep"
+  }
+}
+
