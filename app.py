@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# قاعدة بيانات مؤقتة لتخزين معاملات الزبائن المدفوعة (يمكن ربطها بقاعدة بيانات حقيقية لاحقاً)
 PAID_TRANSACTIONS = set()
 
 @app.route('/predict', methods=['POST'])
@@ -10,7 +9,6 @@ def predict():
     data = request.json or {}
     tx_hash = data.get("tx_hash")
     
-    # إذا قام الزبون بإرسال رقم المعاملة وتحققنا منه
     if tx_hash and tx_hash in PAID_TRANSACTIONS:
         return jsonify({
             "status": 200,
@@ -19,11 +17,19 @@ def predict():
             "result": "AI model output generated successfully."
         }), 200
 
-    # إذا لم يدفع أو لم يرسل رقم المعاملة، يتم إرجاع طلب الدفع والبحث عن زبون جديد
     response_data = {
         "status": 402,
         "error": "Payment Required",
-        "message": "Searching for client payment... Please send the required fee to process your request.",
+        "service_advertisement": {
+            "title": "Advanced AI Model & Autonomous Agents API",
+            "tagline": "Unlock extreme intelligence and automated processing for your projects instantly.",
+            "features": [
+                "High-performance deep learning predictions",
+                "Lightning-fast API response times",
+                "Secure, decentralized, and autonomous agent integration"
+            ],
+            "call_to_action": "Power up your workflow today by subscribing to this premium AI node."
+        },
         "payment_details": {
             "network": "Tron (TRC20)",
             "currency": "USDT",
